@@ -3,7 +3,9 @@ import createMainWindow from "./createMainWindow";
 import setAppMenu from "./setAppMenu";
 import showSaveAsNewFileDialog from "./showSaveAsNewFileDialog";
 import showOpenFileDialog from "./showOpenFileDialog";
+import showExportPDFDialog from "./showExportPDFDialog";
 import createFileManager from "./createFileManager";
+import createPDFWindow from "./createPDFWindow";
 
 let mainWindow = null;
 let fileManager = null;
@@ -28,13 +30,24 @@ function saveFile() {
 function saveAsNewFile() {
     Promise.all([showSaveAsNewFileDialog(), mainWindow.requestText()])
         .then(([filePath, text]) => fileManager.saveFile(filePath, text))
-        .catch((error) => {
-            console.error(error);
-        });
+        .catch((error) => console.error(error));
 }
 
 function exportPDF() {
-    console.log("exportPDF");
+    Promise.all([showExportPDFDialog(), mainWindow.requestText()])
+        .then(([filePath, text]) => {
+            const pdfWindow = createPDFWindow(text);
+            pdfWindow.on("RENDERED_CONTENTS", () => {
+                pdfWindow.generatePDF()
+                    .then((pdf) => fileManager.writePDF(filePath, pdf))
+                    .then(() => pdfWindow.close())
+                    .catch((error) => {
+                        console.error(error);
+                        pdfWindow.close();
+                    });
+            });
+        })
+        .catch((error) => console.error(error));
 }
 
 app.on("ready", () => {
