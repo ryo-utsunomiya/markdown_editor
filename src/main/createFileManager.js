@@ -7,6 +7,13 @@ class FileManager {
             resolve();
         });
     }
+
+    readFile(filePath) {
+        return new Promise((resolve) => {
+            const text = fs.readFileSync(filePath, "utf8");
+            resolve(text);
+        });
+    }
 }
 
 function createFileManager() {
