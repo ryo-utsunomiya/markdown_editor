@@ -1,3 +1,5 @@
+const emojione = require("emojione");
+
 module.exports = class EditorPage {
     constructor(client) {
         this.client = client;
@@ -11,5 +13,18 @@ module.exports = class EditorPage {
     getRenderedHTML() {
         return this.client.waitForExist("#previewer")
             .then(() => this.client.getHTML("#previewer"));
+    }
+
+    findEmojiElement(emojiName) {
+        return this.client.waitForExist("#previewer")
+            .then(() => {
+                const emoji = emojione.emojioneList[`:${emojiName}:`];
+                if (!emoji) {
+                    return false;
+                }
+
+                const src = emojione.imagePathPNG + emoji.unicode;
+                return this.client.getHTML(`#previewer img[src^='${src}.png']`);
+            });
     }
 };
